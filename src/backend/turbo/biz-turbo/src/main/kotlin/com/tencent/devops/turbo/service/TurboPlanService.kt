@@ -10,6 +10,7 @@ import com.tencent.devops.common.db.PageUtils
 import com.tencent.devops.common.service.prometheus.BkTimed
 import com.tencent.devops.common.util.JsonUtil
 import com.tencent.devops.common.util.MathUtil
+import com.tencent.devops.common.web.utils.I18NUtil
 import com.tencent.devops.project.api.service.ServiceProjectResource
 import com.tencent.devops.turbo.dao.mongotemplate.TurboPlanDao
 import com.tencent.devops.turbo.dao.repository.TurboPlanRepository
@@ -304,7 +305,10 @@ class TurboPlanService @Autowired constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             logger.info("submit tbs data fail! error message: ${e.message}")
-            throw TurboException(errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL, errorMessage = "同步数据至加速后端失败")
+            throw TurboException(
+                errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL,
+                errorMessage = I18NUtil.getMessage("syncDataFail")
+            )
         }
     }
 
@@ -316,7 +320,8 @@ class TurboPlanService @Autowired constructor(
         val turboPlanEntity = findTurboPlanById(planId)
         val turboPlanDetailVO = TurboPlanDetailVO()
         if (turboPlanEntity != null) {
-            BeanUtils.copyProperties(turboPlanEntity, turboPlanDetailVO)
+            BeanUtils.copyProperties(turboPlanEntity, turboPlanDetailVO, "engineName")
+            turboPlanDetailVO.engineName = I18NUtil.getMessage("${turboPlanDetailVO.engineCode}.engineName")
             turboPlanDetailVO.planId = planId
         }
         return turboPlanDetailVO
@@ -361,7 +366,10 @@ class TurboPlanService @Autowired constructor(
                     jsonBody = JsonUtil.toJson(DistccRequestBody(user, tbsJsonMap))
                 )
             } catch (e: Exception) {
-                throw TurboException(errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL, errorMessage = "同步数据至加速后端失败")
+                throw TurboException(
+                    errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL,
+                    errorMessage = I18NUtil.getMessage("syncDataFail")
+                )
             }
             return true
         }
@@ -401,7 +409,10 @@ class TurboPlanService @Autowired constructor(
                     jsonBody = JsonUtil.toJson(DistccRequestBody(user, tbsJsonMap))
                 )
             } catch (e: Exception) {
-                throw TurboException(errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL, errorMessage = "同步数据至加速后端失败")
+                throw TurboException(
+                    errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL,
+                    errorMessage = I18NUtil.getMessage("syncDataFail")
+                )
             }
 
             return true
@@ -428,7 +439,10 @@ class TurboPlanService @Autowired constructor(
                     )
                 )
             } catch (e: Exception) {
-                throw TurboException(errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL, errorMessage = "同步数据至加速后端失败")
+                throw TurboException(
+                    errorCode = TURBO_THIRDPARTY_SYSTEM_FAIL,
+                    errorMessage = I18NUtil.getMessage("syncDataFail")
+                )
             }
             true
         }
@@ -444,7 +458,7 @@ class TurboPlanService @Autowired constructor(
                 planId = it.id,
                 planName = it.planName,
                 engineCode = it.engineCode,
-                engineName = it.engineName,
+                engineName = I18NUtil.getMessage("${it.engineCode}.engineName") ?: it.engineName,
                 instanceNum = it.instanceNum,
                 executeCount = it.executeCount,
                 estimateTimeHour = if (it.executeCount <= 0) "0.0" else MathUtil.roundToTwoDigits(it.estimateTimeHour / it.executeCount),
